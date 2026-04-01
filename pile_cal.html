@@ -1,6 +1,358 @@
-<!-- 添加service worker -->
-<script>
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js');
-}
-</script>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>桩基承载力计算</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background: #f2f4f7;
+            padding: 25px;
+            max-width: 450px;
+            margin: 0 auto;
+            padding-bottom: 50px;
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 10px;
+            color: #111827;
+        }
+
+        .sub-title {
+            text-align: center;
+            color: #6b7280;
+            margin-bottom: 25px;
+        }
+
+        /* 示意图 */
+        .schema-box {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .schema-title {
+            font-weight: 600;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .schema {
+            width: 100%;
+            height: 280px;
+            position: relative;
+            margin: 0 auto;
+        }
+
+        .ground {
+            position: absolute;
+            top: 80px;
+            left: 80px;
+            right: 40px;
+            height: 2px;
+            background: #222;
+        }
+        .ground-text {
+            position: absolute;
+            left: 20px;
+            top: 72px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .pile {
+            position: absolute;
+            top: 20px;
+            left: 120px;
+            width: 14px;
+            height: 200px;
+            background: #555;
+            border-radius: 4px;
+        }
+
+        /* -------------------------- */
+        /* 已修正：承台底部对齐 L2 标注 */
+        /* -------------------------- */
+        .cheng-tai {
+            position: absolute;
+            top: 130px;
+            left: 90px;
+            width: 75px;
+            height: 18px;
+            background: #789;
+            border-radius: 3px;
+        }
+
+        /* 尺寸标注线 */
+        .dim-line { position: absolute; background: #222; }
+        .dim-arrow {
+            position: absolute;
+            width: 0; height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+        }
+
+        /* L1：地面以上桩长 */
+        .line-l1 { top:20px; left:160px; width:2px; height:60px; }
+        .arrow-l1-top { top:20px; left:157px; border-bottom:6px solid #222; }
+        .arrow-l1-bottom { top:80px; left:157px; border-top:6px solid #222; }
+        .text-l1 { position:absolute; top:45px; left:175px; font-size:14px; font-weight:500; }
+
+        /* ------------------------------------------------- */
+        /* 已修正：L2 是 地面 → 承台底部（箭头精准指到底部） */
+        /* ------------------------------------------------- */
+        .line-l2 { top:80px; left:160px; width:2px; height:50px; }
+        .arrow-l2-top { top:80px; left:157px; border-bottom:6px solid #222; }
+        .arrow-l2-bottom { top:130px; left:157px; border-top:6px solid #222; }
+        .text-l2 { position:absolute; top:105px; left:175px; font-size:14px; font-weight:500; }
+
+        /* L总：整根桩 */
+        .line-lall { top:20px; left:210px; width:2px; height:200px; }
+        .arrow-lall-top { top:20px; left:207px; border-bottom:6px solid #222; }
+        .arrow-lall-bottom { top:220px; left:207px; border-top:6px solid #222; }
+        .text-lall { position:absolute; top:100px; left:225px; font-size:14px; font-weight:500; }
+
+        /* 输入卡片 */
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 22px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .item {
+            margin-bottom: 18px;
+        }
+
+        .item label {
+            display: block;
+            font-size: 15px;
+            margin-bottom: 6px;
+            color: #374151;
+            font-weight: 500;
+        }
+
+        .item input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .item input:focus {
+            border-color: #007aff;
+        }
+
+        /* 按钮 */
+        .btn {
+            width: 100%;
+            padding: 16px;
+            background: #007aff;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            margin: 10px 0 20px;
+        }
+
+        /* 结果 */
+        .result-box {
+            background: #e8f0fe;
+            border-radius: 16px;
+            padding: 22px;
+            text-align: center;
+            margin-bottom:20px;
+        }
+
+        .result-title {
+            font-size: 16px;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .result {
+            font-size: 28px;
+            font-weight: bold;
+            color: #007aff;
+        }
+
+        .desc {
+            font-size: 13px;
+            color: #6b7280;
+            margin-top: 6px;
+        }
+
+        /* 历史记录 */
+        .history-card {
+            background: white;
+            border-radius:16px;
+            padding:20px;
+            box-shadow:0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .history-title {
+            font-weight:600;
+            margin-bottom:12px;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+        }
+
+        .history-item {
+            padding:10px 0;
+            border-bottom:1px solid #eee;
+            font-size:14px;
+            color:#333;
+        }
+
+        .history-item:last-child {
+            border-bottom:none;
+        }
+
+        .history-res {
+            font-weight:bold;
+            color:#007aff;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="title">桩基承载力计算</div>
+    <div class="sub-title">工程专用版</div>
+
+    <!-- 示意图（已完全修正） -->
+    <div class="schema-box">
+        <div class="schema-title">桩基尺寸示意图（带标注）</div>
+        <div class="schema">
+            <div class="ground"></div>
+            <div class="ground-text">地面</div>
+            <div class="pile"></div>
+            <div class="cheng-tai"></div>
+
+            <div class="dim-line line-l1"></div>
+            <div class="dim-arrow arrow-l1-top"></div>
+            <div class="dim-arrow arrow-l1-bottom"></div>
+            <div class="text-l1">L1</div>
+
+            <div class="dim-line line-l2"></div>
+            <div class="dim-arrow arrow-l2-top"></div>
+            <div class="dim-arrow arrow-l2-bottom"></div>
+            <div class="text-l2">L2</div>
+
+            <div class="dim-line line-lall"></div>
+            <div class="dim-arrow arrow-lall-top"></div>
+            <div class="dim-arrow arrow-lall-bottom"></div>
+            <div class="text-lall">L总</div>
+        </div>
+    </div>
+
+    <!-- 输入（带单位） -->
+    <div class="card">
+        <div class="item">
+            <label>总桩长 L总 (m)</label>
+            <input type="number" id="L" placeholder="单位：米">
+        </div>
+        <div class="item">
+            <label>地面上桩长 L1 (m)</label>
+            <input type="number" id="L1" placeholder="单位：米">
+        </div>
+        <div class="item">
+            <label>承台底部距地面 L2 (m)</label>
+            <input type="number" id="L2" placeholder="单位：米">
+        </div>
+        <div class="item">
+            <label>图纸承载力 F底 (kN)</label>
+            <input type="number" id="F" placeholder="单位：千牛">
+        </div>
+    </div>
+
+    <button class="btn" onclick="calc()">开始计算</button>
+
+    <!-- 结果 -->
+    <div class="result-box">
+        <div class="result-title">计算结果 r（范围值）</div>
+        <div class="result" id="res">-</div>
+        <div class="desc">r = (F + (L总-L1-L2)×0.36×0.36×26) ÷ (0.3~0.4)</div>
+    </div>
+
+    <!-- 历史记录 -->
+    <div class="history-card">
+        <div class="history-title">
+            <span>计算历史</span>
+            <button onclick="clearHistory()" style="border:none; background:#ff3b30; color:white; padding:4px 8px; border-radius:6px; font-size:12px;">清空</button>
+        </div>
+        <div id="historyList"></div>
+    </div>
+
+    <script>
+        let history = JSON.parse(localStorage.getItem('jizaiHistory')) || [];
+
+        function calc() {
+            let L = parseFloat(document.getElementById('L').value) || 0
+            let L1 = parseFloat(document.getElementById('L1').value) || 0
+            let L2 = parseFloat(document.getElementById('L2').value) || 0
+            let F = parseFloat(document.getElementById('F').value) || 0
+
+            let h = L - L1 - L2;
+            let top = F + h * 0.36 * 0.36 * 26;
+            let rMin = (top / 0.4).toFixed(2);
+            let rMax = (top / 0.3).toFixed(2);
+            let resText = rMin + " ~ " + rMax;
+
+            document.getElementById('res').innerText = resText;
+
+            let record = {
+                L: L, L1:L1, L2:L2, F:F,
+                res: resText,
+                time: new Date().toLocaleString()
+            };
+            history.unshift(record);
+            if(history.length>20) history = history.slice(0,20);
+            localStorage.setItem('jizaiHistory', JSON.stringify(history));
+            renderHistory();
+        }
+
+        function renderHistory() {
+            let list = document.getElementById('historyList');
+            list.innerHTML = '';
+            history.forEach(item=>{
+                let div = document.createElement('div');
+                div.className='history-item';
+                div.innerHTML = `
+                    ${item.time}<br>
+                    L总=${item.L}m L1=${item.L1}m L2=${item.L2}m F=${item.F}kN<br>
+                    结果：<span class="history-res">${item.res}</span>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function clearHistory() {
+            if(!confirm('确定清空所有历史记录？')) return;
+            history = [];
+            localStorage.removeItem('jizaiHistory');
+            renderHistory();
+        }
+
+        renderHistory();
+    </script>
+</body>
+</html>
