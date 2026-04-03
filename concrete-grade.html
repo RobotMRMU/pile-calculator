@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>混凝土标号对比 | 工程工具箱</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="nav">
+        <div class="nav-container">
+            <a href="index.html" class="nav-logo">工程工具箱</a>
+            <button class="nav-toggle" onclick="toggleMenu()">☰</button>
+            <div class="nav-menu" id="navMenu">
+                <a href="index.html" class="nav-link">桩基计算</a>
+                <a href="unit-converter.html" class="nav-link">单位转换</a>
+                <a href="concrete-grade.html" class="nav-link active">混凝土标号</a>
+                <a href="about.html" class="nav-link">关于</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="page-title">中美混凝土标号对比表</div>
+    <div class="page-subtitle">强度等级对应关系参考</div>
+
+    <div class="card">
+        <div class="search-box">
+            <input type="text" class="search-input" id="searchInput" 
+                   placeholder="搜索混凝土标号（如C30, 3000psi）" 
+                   onkeyup="filterTable()">
+            <div class="filter-buttons">
+                <button class="filter-btn active" onclick="filterByType('all')">全部</button>
+                <button class="filter-btn" onclick="filterByType('cn')">中国标号</button>
+                <button class="filter-btn" onclick="filterByType('us')">美国标号</button>
+                <button class="filter-btn" onclick="filterByType('common')">常用标号</button>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table class="data-table" id="concreteTable">
+                <thead>
+                    <tr>
+                        <th>中国标号 (GB)</th>
+                        <th>抗压强度 (MPa)</th>
+                        <th>美国标号 (ACI)</th>
+                        <th>抗压强度 (psi)</th>
+                        <th>强度等级</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- 数据通过JS动态生成 -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="note-box">
+            <strong>说明：</strong><br>
+            1. 中国混凝土标号如C30表示立方体抗压强度标准值为30MPa<br>
+            2. 美国混凝土标号如3000psi表示圆柱体抗压强度为3000磅/平方英寸<br>
+            3. 由于试验方法不同，中美混凝土强度并非严格等效<br>
+            4. 实际工程中需根据具体设计规范进行换算
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // 混凝土标号数据
+        const concreteData = [
+            { cn: 'C10', cn_mpa: 10, us: '1000 psi', us_psi: 1000, grade: '低强度', type: 'cn' },
+            { cn: 'C15', cn_mpa: 15, us: '1500 psi', us_psi: 1500, grade: '低强度', type: 'cn' },
+            { cn: 'C20', cn_mpa: 20, us: '2000 psi', us_psi: 2000, grade: '低强度', type: 'cn' },
+            { cn: 'C25', cn_mpa: 25, us: '2500 psi', us_psi: 2500, grade: '常规', type: 'common' },
+            { cn: 'C30', cn_mpa: 30, us: '3000 psi', us_psi: 3000, grade: '常规', type: 'common' },
+            { cn: 'C35', cn_mpa: 35, us: '3500 psi', us_psi: 3500, grade: '常规', type: 'common' },
+            { cn: 'C40', cn_mpa: 40, us: '4000 psi', us_psi: 4000, grade: '中高强度', type: 'common' },
+            { cn: 'C45', cn_mpa: 45, us: '4500 psi', us_psi: 4500, grade: '中高强度', type: 'cn' },
+            { cn: 'C50', cn_mpa: 50, us: '5000 psi', us_psi: 5000, grade: '高强度', type: 'common' },
+            { cn: 'C55', cn_mpa: 55, us: '5500 psi', us_psi: 5500, grade: '高强度', type: 'cn' },
+            { cn: 'C60', cn_mpa: 60, us: '6000 psi', us_psi: 6000, grade: '高强度', type: 'common' },
+            { cn: 'C70', cn_mpa: 70, us: '7000 psi', us_psi: 7000, grade: '超高强度', type: 'us' },
+            { cn: 'C80', cn_mpa: 80, us: '8000 psi', us_psi: 8000, grade: '超高强度', type: 'us' },
+            { cn: 'C90', cn_mpa: 90, us: '9000 psi', us_psi: 9000, grade: '超高强度', type: 'us' },
+            { cn: 'C100', cn_mpa: 100, us: '10000 psi', us_psi: 10000, grade: '特种强度', type: 'us' }
+        ];
+
+        let currentFilter = 'all';
+
+        // 初始化表格
+        function renderTable(data) {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            
+            if (data.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align:center; padding:30px; color:#6b7280;">
+                            未找到匹配的混凝土标号
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            data.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><span class="tag tag-china">${item.cn}</span></td>
+                    <td>${item.cn_mpa} MPa</td>
+                    <td><span class="tag tag-usa">${item.us}</span></td>
+                    <td>${item.us_psi.toLocaleString()} psi</td>
+                    <td>${item.grade}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // 搜索过滤
+        function filterTable() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            let filteredData = concreteData.filter(item => 
+                item.cn.toLowerCase().includes(searchTerm) ||
+                item.us.toLowerCase().includes(searchTerm) ||
+                item.cn_mpa.toString().includes(searchTerm) ||
+                item.us_psi.toString().includes(searchTerm) ||
+                item.grade.toLowerCase().includes(searchTerm)
+            );
+            
+            // 应用当前类型过滤
+            if (currentFilter !== 'all') {
+                filteredData = filteredData.filter(item => {
+                    if (currentFilter === 'common') return item.type === 'common';
+                    if (currentFilter === 'cn') return item.type === 'cn' || item.type === 'common';
+                    if (currentFilter === 'us') return item.type === 'us' || item.type === 'common';
+                    return true;
+                });
+            }
+            
+            renderTable(filteredData);
+        }
+
+        // 按类型过滤
+        function filterByType(type) {
+            currentFilter = type;
+            
+            // 更新按钮状态
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // 应用过滤
+            filterTable();
+        }
+
+        // 初始渲染
+        document.addEventListener('DOMContentLoaded', function() {
+            renderTable(concreteData);
+        });
+    </script>
+</body>
+</html>

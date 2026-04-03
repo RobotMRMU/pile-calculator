@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>单位转换器 | 工程工具箱</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="nav">
+        <div class="nav-container">
+            <a href="index.html" class="nav-logo">工程工具箱</a>
+            <button class="nav-toggle" onclick="toggleMenu()">☰</button>
+            <div class="nav-menu" id="navMenu">
+                <a href="index.html" class="nav-link">桩基计算</a>
+                <a href="unit-converter.html" class="nav-link active">单位转换</a>
+                <a href="concrete-grade.html" class="nav-link">混凝土标号</a>
+                <a href="about.html" class="nav-link">关于</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="page-title">工程单位转换器</div>
+    <div class="page-subtitle">支持长度、力、压力等单位转换</div>
+
+    <div class="card">
+        <!-- 长度单位转换 -->
+        <div class="converter-group">
+            <div class="converter-title">长度单位</div>
+            <div class="converter-row">
+                <input type="number" class="converter-input" id="lengthInput" placeholder="输入数值" value="1" step="0.001">
+                <select class="converter-select" id="lengthFrom" onchange="convertLength()">
+                    <option value="m">米 (m)</option>
+                    <option value="cm">厘米 (cm)</option>
+                    <option value="mm">毫米 (mm)</option>
+                    <option value="km">千米 (km)</option>
+                    <option value="ft">英尺 (ft)</option>
+                    <option value="in">英寸 (in)</option>
+                </select>
+            </div>
+            <div class="converter-row">
+                <input type="number" class="converter-input" id="lengthOutput" placeholder="转换结果" readonly>
+                <select class="converter-select" id="lengthTo" onchange="convertLength()">
+                    <option value="m">米 (m)</option>
+                    <option value="cm" selected>厘米 (cm)</option>
+                    <option value="mm">毫米 (mm)</option>
+                    <option value="km">千米 (km)</option>
+                    <option value="ft">英尺 (ft)</option>
+                    <option value="in">英寸 (in)</option>
+                </select>
+            </div>
+            <div class="converter-result" id="lengthResult">1 米 = 100 厘米</div>
+        </div>
+
+        <!-- 力单位转换 -->
+        <div class="converter-group">
+            <div class="converter-title">力单位</div>
+            <div class="converter-row">
+                <input type="number" class="converter-input" id="forceInput" placeholder="输入数值" value="1" step="0.001">
+                <select class="converter-select" id="forceFrom" onchange="convertForce()">
+                    <option value="N">牛顿 (N)</option>
+                    <option value="kN" selected>千牛 (kN)</option>
+                    <option value="kgf">公斤力 (kgf)</option>
+                    <option value="lbf">磅力 (lbf)</option>
+                    <option value="tonf">吨力 (tonf)</option>
+                </select>
+            </div>
+            <div class="converter-row">
+                <input type="number" class="converter-input" id="forceOutput" placeholder="转换结果" readonly>
+                <select class="converter-select" id="forceTo" onchange="convertForce()">
+                    <option value="N">牛顿 (N)</option>
+                    <option value="kN">千牛 (kN)</option>
+                    <option value="kgf" selected>公斤力 (kgf)</option>
+                    <option value="lbf">磅力 (lbf)</option>
+                    <option value="tonf">吨力 (tonf)</option>
+                </select>
+            </div>
+            <div class="converter-result" id="forceResult">1 kN = 101.97 kgf</div>
+        </div>
+
+        <!-- 压力/应力单位转换 -->
+        <div class="converter-group">
+            <div class="converter-title">压力/应力单位</div>
+            <div class="converter-row">
+                <input type="number" class="converter-input" id="pressureInput" placeholder="输入数值" value="1" step="0.001">
+                <select class="converter-select" id="pressureFrom" onchange="convertPressure()">
+                    <option value="Pa">帕斯卡 (Pa)</option>
+                    <option value="kPa">千帕 (kPa)</option>
+                    <option value="MPa" selected>兆帕 (MPa)</option>
+                    <option value="GPa">吉帕 (GPa)</option>
+                    <option value="psi">磅力/平方英寸 (psi)</option>
+                    <option value="ksi">千磅/平方英寸 (ksi)</option>
+                    <option value="kgf_cm2">公斤力/平方厘米 (kgf/cm²)</option>
+                </select>
+            </div>
+            <div class="converter-row">
+                <input type="number" class="converter-input" id="pressureOutput" placeholder="转换结果" readonly>
+                <select class="converter-select" id="pressureTo" onchange="convertPressure()">
+                    <option value="Pa">帕斯卡 (Pa)</option>
+                    <option value="kPa">千帕 (kPa)</option>
+                    <option value="MPa">兆帕 (MPa)</option>
+                    <option value="GPa">吉帕 (GPa)</option>
+                    <option value="psi" selected>磅力/平方英寸 (psi)</option>
+                    <option value="ksi">千磅/平方英寸 (ksi)</option>
+                    <option value="kgf_cm2">公斤力/平方厘米 (kgf/cm²)</option>
+                </select>
+            </div>
+            <div class="converter-result" id="pressureResult">1 MPa = 145.04 psi</div>
+        </div>
+
+        <!-- 面积单位转换 -->
+        <div class="converter-group">
+            <div class="converter-title">面积单位</div>
+            <div class="converter-row">
+                <input type="number" class="converter-input" id="areaInput" placeholder="输入数值" value="1" step="0.001">
+                <select class="converter-select" id="areaFrom" onchange="convertArea()">
+                    <option value="m2">平方米 (m²)</option>
+                    <option value="cm2">平方厘米 (cm²)</option>
+                    <option value="mm2">平方毫米 (mm²)</option>
+                    <option value="ha">公顷 (ha)</option>
+                    <option value="ft2">平方英尺 (ft²)</option>
+                    <option value="in2">平方英寸 (in²)</option>
+                </select>
+            </div>
+            <div class="converter-row">
+                <input type="number" class="converter-input" id="areaOutput" placeholder="转换结果" readonly>
+                <select class="converter-select" id="areaTo" onchange="convertArea()">
+                    <option value="m2" selected>平方米 (m²)</option>
+                    <option value="cm2">平方厘米 (cm²)</option>
+                    <option value="mm2">平方毫米 (mm²)</option>
+                    <option value="ha">公顷 (ha)</option>
+                    <option value="ft2">平方英尺 (ft²)</option>
+                    <option value="in2">平方英寸 (in²)</option>
+                </select>
+            </div>
+            <div class="converter-result" id="areaResult">1 m² = 10000 cm²</div>
+        </div>
+
+        <div class="info-box">
+            <strong>常用换算系数：</strong><br>
+            • 1 英尺 (ft) = 0.3048 米<br>
+            • 1 英寸 (in) = 25.4 毫米<br>
+            • 1 千牛 (kN) = 101.97 公斤力<br>
+            • 1 兆帕 (MPa) = 10.197 kgf/cm²<br>
+            • 1 psi = 0.006895 MPa<br>
+            • 1 平方英尺 (ft²) = 0.0929 平方米<br>
+            • 1 公顷 (ha) = 10000 平方米
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // 单位换算系数
+        const lengthFactors = {
+            'm': 1,
+            'cm': 100,
+            'mm': 1000,
+            'km': 0.001,
+            'ft': 3.28084,
+            'in': 39.3701
+        };
+
+        const forceFactors = {
+            'N': 1,
+            'kN': 0.001,
+            'kgf': 0.101972,
+            'lbf': 0.224809,
+            'tonf': 0.000101972
+        };
+
+        const pressureFactors = {
+            'Pa': 1,
+            'kPa': 0.001,
+            'MPa': 0.000001,
+            'GPa': 0.000000001,
+            'psi': 0.000145038,
+            'ksi': 0.000000145038,
+            'kgf_cm2': 0.0000101972
+        };
+
+        const areaFactors = {
+            'm2': 1,
+            'cm2': 10000,
+            'mm2': 1000000,
+            'ha': 0.0001,
+            'ft2': 10.7639,
+            'in2': 1550
+        };
+
+        function convertLength() {
+            const input = parseFloat(document.getElementById('lengthInput').value) || 0;
+            const from = document.getElementById('lengthFrom').value;
+            const to = document.getElementById('lengthTo').value;
+            
+            const valueInMeters = input / lengthFactors[from];
+            const result = valueInMeters * lengthFactors[to];
+            
+            document.getElementById('lengthOutput').value = result.toFixed(6);
+            document.getElementById('lengthResult').textContent = 
+                `${input} ${from} = ${result.toFixed(4)} ${to}`;
+        }
+
+        function convertForce() {
+            const input = parseFloat(document.getElementById('forceInput').value) || 0;
+            const from = document.getElementById('forceFrom').value;
+            const to = document.getElementById('forceTo').value;
+            
+            const valueInN = input / forceFactors[from];
+            const result = valueInN * forceFactors[to];
+            
+            document.getElementById('forceOutput').value = result.toFixed(6);
+            document.getElementById('forceResult').textContent = 
+                `${input} ${from} = ${result.toFixed(4)} ${to}`;
+        }
+
+        function convertPressure() {
+            const input = parseFloat(document.getElementById('pressureInput').value) || 0;
+            const from = document.getElementById('pressureFrom').value;
+            const to = document.getElementById('pressureTo').value;
+            
+            const valueInPa = input / pressureFactors[from];
+            const result = valueInPa * pressureFactors[to];
+            
+            document.getElementById('pressureOutput').value = result.toFixed(6);
+            document.getElementById('pressureResult').textContent = 
+                `${input} ${from} = ${result.toFixed(4)} ${to}`;
+        }
+
+        function convertArea() {
+            const input = parseFloat(document.getElementById('areaInput').value) || 0;
+            const from = document.getElementById('areaFrom').value;
+            const to = document.getElementById('areaTo').value;
+            
+            const valueInM2 = input / areaFactors[from];
+            const result = valueInM2 * areaFactors[to];
+            
+            document.getElementById('areaOutput').value = result.toFixed(6);
+            document.getElementById('areaResult').textContent = 
+                `${input} ${from} = ${result.toFixed(4)} ${to}`;
+        }
+
+        // 为输入框添加实时转换
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputs = document.querySelectorAll('.converter-input:not([readonly])');
+            inputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    if (this.id.includes('length')) convertLength();
+                    if (this.id.includes('force')) convertForce();
+                    if (this.id.includes('pressure')) convertPressure();
+                    if (this.id.includes('area')) convertArea();
+                });
+            });
+            
+            // 初始计算
+            convertLength();
+            convertForce();
+            convertPressure();
+            convertArea();
+        });
+    </script>
+</body>
+</html>
